@@ -51,7 +51,35 @@ links=(
     /assets/sounds/Cowbell_1_1.mp3
     /assets/sounds/Arp_4_1.mp3
     /assets/sounds/Arp_1_1.mp3
-
+    /assets/sounds/Car_SlowDown_2.mp3
+    /assets/sounds/Car_DriveAndLoop.m4a
+    /assets/sounds/FX_Go.mp3
+    /assets/sounds/Fanfare_5.mp3
+    /assets/sounds/Fanfare_4.mp3
+    /assets/sounds/Fanfare_3.mp3
+    /assets/sounds/Fanfare_2.mp3
+    /assets/sounds/CarCrash1_4.mp3
+    /assets/sounds/CarCrash1_2.mp3
+    /assets/sounds/Bridge_1_7.mp3
+    /assets/sounds/Bridge_1_6.mp3
+    /assets/sounds/Bridge_1_2.mp3
+    /assets/sounds/Car_IdleLoop_5s.m4a
+    /assets/sounds/FX_Ready.mp3
+    /assets/sounds/FX_Skid.mp3
+    /assets/sounds/FX_TapReady.mp3
+    /assets/sounds/FX_Finished.mp3
+    /assets/sounds/CarCrash1_1.mp3
+    /assets/sounds/Bridge_1_8.mp3
+    /assets/sounds/Bridge_1_5.mp3
+    /assets/sounds/Bridge_1_4.mp3
+    /assets/sounds/Bridge_1_3.mp3
+    /assets/sounds/Bridge_1_1.mp3
+    /assets/sounds/FX_FinalLap.mp3
+    /assets/sounds/FX_Lap.mp3
+    /assets/sounds/Fanfare_1.mp3
+    /assets/sounds/Race_1.mp3
+    /assets/sounds/Race_2.mp3
+    
     # Images
     /assets/images/about/gradient-top.png
     /assets/images/about/gradient-bottom.png
@@ -116,6 +144,9 @@ links=(
     /assets/images/common/logos/youtube.png
     /assets/images/common/logos/racer-fallback.png
     /assets/images/common/logos/chrome-small.png
+    /assets/images/lineup/you-triangle.png
+    /assets/sprites/crash/blue.png
+    /assets/sprites/crash/green.png
 
 )
 
