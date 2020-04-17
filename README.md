@@ -32,11 +32,4 @@ sudo npm install -g prettier
 ./download_client.sh
 ```
 
-This will create a `client` folder in your repo. Before it can work with this server however, there are a few changes required. Open `client/assets/js/racer.js` and find the following lines:
-
-```js
-this.APP_ENGINE = "...";
-a.LIVE_SERVER = false;
-```
-
-Set `APP_ENGINE` to `https://<server_ip>:<server_port>`, set `LIVE_SERVER` to `true`. Save and connect to the client via `https://<server_ip>:<server_port>/racer/`
+This will create a `client` folder in your repo. Open `client/assets/js/racer.js` and replace lines containing `<server_ip>:<server_port>` with the corresponding values from `config.json`. Save and connect to the client via `https://<server_ip>:<server_port>/racer/`
