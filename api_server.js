@@ -10,7 +10,7 @@ module.exports = function () {
 
     // Client side
     app.use("/racer", express.static("client"));
-    
+
     // Server
     app.get("/control/start", (req, res) => {
         res.send({
@@ -25,7 +25,6 @@ module.exports = function () {
     });
 
     app.get("/control/join", (req, res) => {
-        console.log(req.params);
         res.send({
             relay: `wss://${config.server_ip}:${config.server_port}`
         });
