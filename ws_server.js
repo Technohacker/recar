@@ -95,7 +95,7 @@ module.exports = function (server, mem) {
             mem.editPlayerName(req.code, req.player, req.name);
 
             let race = mem.getRace(req.code);
-            let sockets = mem.getRaceSockets(code);
+            let sockets = mem.getRaceSockets(req.code);
 
             wss.broadcast(sockets, {
                 _socketio_type: "join_game_update",
