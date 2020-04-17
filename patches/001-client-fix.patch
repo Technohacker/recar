@@ -1,0 +1,227 @@
+diff -ruN client/assets/js/racer.js client.bak/assets/js/racer.js
+--- client/assets/js/racer.js	2020-04-17 15:10:43.454507131 +0530
++++ client.bak/assets/js/racer.js	2020-04-17 14:57:19.289669091 +0530
+@@ -478,6 +478,10 @@
+     }
+   }
+   function b() {
++    // Get audio working
++    document.body.addEventListener("touchstart", (e) =>
++      SCSound.Core.SoundController.context.resume()
++    );
+     if (window.removeEventListener) {
+       window.removeEventListener("load", b, false);
+     }
+@@ -4652,17 +4656,8 @@
+     "assets/images/lineup/you-triangle-dark.png",
+     "assets/images/lineup/you-triangle.png",
+   ];
+-  this.APP_ENGINE = "https://gweb-chromeracer-qa.appspot.com";
+-  this.PATH = (function () {
+-    if (
+-      window.location.href.strpos("appspot") ||
+-      window.location.href.strpos("chrome.com")
+-    ) {
+-      a.LIVE_SERVER = true;
+-      return "https://storage.googleapis.com/chrome-racer-static/";
+-    }
+-    return "";
+-  })();
++  this.APP_ENGINE = "https://<server ip>:<server port>";
++  this.PATH = "https://<server ip>:<server port>/racer/";
+   this.SOCKET_SERVER = (function () {
+     if (window.RACER_SOCKET_SERVER) {
+       a.USE_WEBSOCKETS = false;
+@@ -4845,7 +4840,6 @@
+     n.removeURL = false;
+     r();
+     n.doc.scrollTop = 0;
+-    window.removeEventListener("touchmove");
+   }
+   this.getScreen = function () {
+     return { w: n.setWidth, h: n.setHeight };
+@@ -4857,9 +4851,6 @@
+       if (v.y < 75) {
+         return false;
+       }
+-      if (!n.chrome_iphone || (n.chrome_iphone && v.y > 120)) {
+-        h.preventDefault();
+-      }
+     });
+   };
+   this.fullscreen = function () {
+@@ -5472,7 +5463,6 @@
+     }
+   }
+   function i(aF) {
+-    aF.preventDefault();
+     if (SCSound.isInited) {
+       __window.unbind("touchstart", i);
+       SCSound.onLibLoaded = aa;
+@@ -5983,11 +5973,11 @@
+   isReady: false,
+   isInited: false,
+   webaudio: false,
+-  debug: false,
+-  doLog: false,
++  debug: true,
++  doLog: true,
+   disable: false,
+   self: this,
+-  dummyConsole: { log: function () {} },
++  dummyConsole: { log: console.log },
+   log: this.dummyConsole,
+   initialize: function (d, b, h, e, g, a) {
+     SCSound.progress = g;
+@@ -6058,6 +6048,8 @@
+   initWebAudio: function () {
+     SCSound.Core.EventBus = new SCSound.Core.EventBusClass();
+     SCSound.htmlAudio = true;
++    SCSound.audioTag = new Audio();
++
+     SCSound.Core.EventBus.addEventListener(
+       "SCLoadProgress",
+       function (b, a) {
+@@ -6077,19 +6069,6 @@
+       SCSound.soundPath,
+       function () {
+         SCSound.receive("scsound_ready", 1, "");
+-        if (SCSound.debug) {
+-          var b = document.getElementsByTagName("head")[0];
+-          var a = document.createElement("script");
+-          a.type = "text/javascript";
+-          a.src = "scdebug.js";
+-          a.onload = function () {
+-            scdebug.init();
+-          };
+-          if (scdebug) {
+-            scdebug.init();
+-          }
+-          b.appendChild(a);
+-        }
+       }
+     );
+   },
+@@ -8076,21 +8055,16 @@
+           return;
+         }
+       } else {
+-        if (this.audioBuffer.gain) {
+-          this.audio = this.voice;
+-          this.audio.buffer = this.audioBuffer;
+-          this.audio.playbackRate.value = this.playbackRate;
+-          a = f;
+-          if (h) {
+-            this.audio.loop = true;
+-            if (d) {
+-              this.audio.loopStart = d / 1000;
+-              this.audio.loopEnd = c / 1000;
+-            }
++        this.audio = this.voice;
++        this.audio.buffer = this.audioBuffer;
++        this.audio.playbackRate.value = this.playbackRate;
++        a = f;
++        if (h) {
++          this.audio.loop = true;
++          if (d) {
++            this.audio.loopStart = d / 1000;
++            this.audio.loopEnd = c / 1000;
+           }
+-        } else {
+-          SCSound.console.log("Unrecognized sound type", this.name);
+-          return;
+         }
+       }
+     }
+@@ -9840,14 +9814,10 @@
+       Config.ASSETS.push("assets/js/lib/paper.js");
+     }
+     if (!Global.TABLE) {
+-      if (!Config.LIVE_SERVER) {
+-        Config.ASSETS.push("http://racer.activetheorylab.net/cms/data/");
++      if (RacerDevice.mobile) {
++        Config.ASSETS.push("assets/data/mobile.js");
+       } else {
+-        if (RacerDevice.mobile) {
+-          Config.ASSETS.push("assets/data/mobile.js");
+-        } else {
+-          Config.ASSETS.push("assets/data/desktop.js");
+-        }
++        Config.ASSETS.push("assets/data/desktop.js");
+       }
+     }
+   }
+@@ -13327,6 +13297,7 @@
+   })();
+   function o() {
+     k = s.element;
++
+     if (i.center) {
+       k.css({ position: "relative", margin: "0 auto" });
+     }
+@@ -13394,6 +13365,7 @@
+   function u() {
+     s.width = Math.round(e * i.length + t * (i.length - 1));
+     s.height = e;
++
+     k.size(s.width, s.height);
+     if (i.text) {
+       k.css({ marginBottom: t * 2 });
+@@ -13973,8 +13945,6 @@
+     }
+   };
+   this.destroy = function () {
+-    b.div.removeEventListener("keyup");
+-    e.div.removeEventListener("submit");
+     return this._destroy();
+   };
+ });
+diff -ruN client/index.html client.bak/index.html
+--- client/index.html	2020-04-17 15:10:33.664204217 +0530
++++ client.bak/index.html	2020-04-17 14:57:53.080709929 +0530
+@@ -16,9 +16,6 @@
+     <link href="/racer/assets/css/style.css" rel="stylesheet" type="text/css" />
+ 
+     <link rel="canonical" href="http://g.co/racer" />
+-    <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
+-      {"parsetags": "explicit"}
+-    </script>
+ 
+     <link rel="icon" href="/racer/favicon.ico" />
+     <meta itemprop="name" content="RACER: A Chrome Experiment" />
+@@ -41,6 +38,10 @@
+       content="Race across multiple screens. No apps. No downloads. Just start a race—sync up to five devices and tap your screens to rev your engines."
+     />
+ 
++    <script
++      type="text/javascript"
++      src="/racer/assets/js/lib/pathseg.js"
++    ></script>
+     <script type="text/javascript" src="/racer/assets/js/racer.js"></script>
+   </head>
+   <body>
+@@ -50,24 +51,5 @@
+       data-href="g.co/racer"
+       style="display: none;"
+     ></div>
+-    <script type="text/javascript">
+-      var __COUNTRY_CODE = "IN";
+-
+-      var _gaq = _gaq || [];
+-      _gaq.push(["_setAccount", "UA-26908291-4"]);
+-      _gaq.push(["_trackPageview"]);
+-
+-      (function () {
+-        var ga = document.createElement("script");
+-        ga.type = "text/javascript";
+-        ga.async = true;
+-        ga.src =
+-          ("https:" == document.location.protocol
+-            ? "https://ssl"
+-            : "http://www") + ".google-analytics.com/ga.js";
+-        var s = document.getElementsByTagName("script")[0];
+-        s.parentNode.insertBefore(ga, s);
+-      })();
+-    </script>
+   </body>
+ </html>

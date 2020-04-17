@@ -150,6 +150,7 @@ links=(
 
 )
 
+# Download every file
 for item in ${links[*]}
 do
     if [ ! -e client${item} ]; then
@@ -158,10 +159,23 @@ do
         mkdir -p client$(dirname $item)
         curl --compressed -L "https://chrome.com/racer${item}" -o client$item
     fi
-    
+done
+
+# Fix an annoying missing semicolon
+sed -i "s/overflow: 'visible',/overflow: 'visible';/" client/assets/css/style.css
+
+# Prettify
+for item in ${links[*]}
+do
     prettier -c client${item} &> /dev/null && continue
 
     echo "Prettifying client${item}..."
     prettier --write client${item}
 
 done
+
+# Copy any polyfills
+cp polyfills/* client/assets/js/lib/
+
+# Apply patches to fix the client
+patch -p0 < patches/001-client-fix.patch
