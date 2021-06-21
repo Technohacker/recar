@@ -27,7 +27,7 @@ npm start
 As we need the official client which can be assumed non-redistributable, we use a downloader script to download the client straight from Google's servers:
 
 ```sh
-./download_new.sh
+./download.sh
 ```
 
 After the download, the script will ask for the server details. Enter the details according to the `config.json` file.
