@@ -24,12 +24,12 @@ npm start
 ```
 
 ### Client
-As we need the official client which can be assumed non-redistributable, we use a downloader script to download (and prettify) the client straight from Google's servers:
+As we need the official client which can be assumed non-redistributable, we use a downloader script to download the client straight from Google's servers:
 
 ```sh
-# For prettification of minified source
-sudo npm install -g prettier
-./download_client.sh
+./download_new.sh
 ```
 
-This will create a `client` folder in your repo. Open `client/assets/js/racer.js` and replace lines containing `<server_ip>:<server_port>` with the corresponding values from `config.json`. Save and connect to the client via `https://<server_ip>:<server_port>/racer/`
+After the download, the script will ask for the server details. Enter the details according to the `config.json` file.
+
+This will create a `client` folder in your repo. Connect to the client via `https://<server_ip>:<server_port>/racer/`

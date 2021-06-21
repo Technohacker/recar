@@ -1,0 +1,322 @@
+diff -ruZ client/assets/css/style.css client_patched/assets/css/style.css
+--- client/assets/css/style.css	2021-06-21 22:36:16.667354798 +0200
++++ client_patched/assets/css/style.css	2021-05-02 01:31:23.303666667 +0200
+@@ -48,7 +48,7 @@
+ */
+ .ContentViewHeader span { color: #fff; }
+ .ContentViewSection * { position: relative; }
+-.ContentViewSection { overflow: 'visible', margin: 150px auto 300px auto; border-top: 1px solid rgba(255,255,255,0.2); display: block; }
++.ContentViewSection { overflow: 'visible'; margin: 150px auto 300px auto; border-top: 1px solid rgba(255,255,255,0.2); display: block; }
+ .ContentViewSection strong { font-size: 24px; line-height: 30px; letter-spacing: 1px !important; margin-bottom: 5px; display: block; color: #f8f8f8; }
+ .ContentViewSection p { display: block; width: 100%; margin: 20px auto 0 auto; }
+ .ContentViewSection p.large { color: #999; font-size: 17px; line-height: 21px; letter-spacing: 0; font-weight: bold; width: 90%; }
+diff -ruZ client/assets/js/hydra/hydra.js client_patched/assets/js/hydra/hydra.js
+--- client/assets/js/hydra/hydra.js	2021-06-21 22:36:16.832815204 +0200
++++ client_patched/assets/js/hydra/hydra.js	2021-05-03 18:47:45.422637545 +0200
+@@ -302,6 +302,11 @@
+ 	}
+ 	
+ 	function loaded() {
++		// Get audio working
++		document.body.addEventListener('touchstart', (e) =>
++			SCSound.Core.SoundController.context.resume()
++		);
++
+ 		if (window.removeEventListener) window.removeEventListener('load', loaded, false);
+ 		for (var i = 0; i < _readyCallbacks.length; i++) {
+ 			_readyCallbacks[i]();
+@@ -3939,6 +3944,3 @@
+ 		if (typeof _gaq !== 'undefined') _gaq.push(['_setCustomVar', 1, name, descr]);
+ 	}
+ }, 'Static');
+-
+-
+-
+diff -ruZ client/assets/js/lib/RemoteDebug.js client_patched/assets/js/lib/RemoteDebug.js
+--- client/assets/js/lib/RemoteDebug.js	2021-06-21 22:36:17.948216171 +0200
++++ client_patched/assets/js/lib/RemoteDebug.js	2021-05-02 02:01:03.199826393 +0200
+@@ -1,4 +1,5 @@
+ (function() {
++    return;
+     var _io = io.connect('http://cloud.activetheorylab.net:7777');
+     if (Device.mobile || Device.browser.old || Device.browser.ie || window.location.hash.strpos('console')) {
+         window.console = {
+diff -ruZ client/assets/js/lib/scsound.js client_patched/assets/js/lib/scsound.js
+--- client/assets/js/lib/scsound.js	2021-06-21 22:36:18.090692072 +0200
++++ client_patched/assets/js/lib/scsound.js	2021-05-03 18:14:27.385318522 +0200
+@@ -6,12 +6,12 @@
+ 	isReady: false,
+ 	isInited: false,
+ 	webaudio: false,
+-	debug: false,
+-	doLog: false,
++	debug: true,
++	doLog: true,
+ 	disable: false,
+ 	self:this,
+ 	dummyConsole:{  
+-	    log : function(){},  
++	    log : console.log,
+ 	},
+ 	log:this.dummyConsole,
+ 	/**
+@@ -90,6 +90,7 @@
+ 	initWebAudio: function() {
+ 		SCSound.Core.EventBus = new SCSound.Core.EventBusClass();
+ 		SCSound.htmlAudio = true;
++		SCSound.audioTag = new Audio();
+ 		SCSound.Core.EventBus.addEventListener("SCLoadProgress", function(event, percentLoaded) {
+ 			SCSound.receive("scsound_progress", percentLoaded, "sounds_0.swf");
+ 		}, self);
+@@ -100,19 +101,6 @@
+ 		SCSound.sc = new SCSound.Core.SoundController(SCSound.xmlPath, SCSound.soundPath, function() {
+ 			SCSound.receive("scsound_ready", 1, "");
+ 			/** Only for debugging*/
+-			if (SCSound.debug) {
+-				var oHead = document.getElementsByTagName("head")[0];
+-				var oScript = document.createElement('script');
+-				oScript.type = 'text/javascript';
+-				oScript.src = "scdebug.js";
+-				oScript.onload = function() {
+-					scdebug.init();
+-				};
+-				if (scdebug) {
+-					scdebug.init();
+-				}
+-				oHead.appendChild(oScript);
+-			}
+ 		});
+ 	},
+ 	/**
+@@ -1984,7 +1972,7 @@
+ 				SCSound.audioTag.play();
+ 				return;
+ 			}
+-		}else if (this.audioBuffer.gain){
++		} else {
+ 			this.audio = this.voice;
+ 			this.audio.buffer = this.audioBuffer;
+ 			this.audio.playbackRate.value = this.playbackRate;
+@@ -1996,9 +1984,6 @@
+ 					this.audio.loopEnd = loopEnd/1000;
+ 				}
+ 			}
+-		}else {
+-			SCSound.console.log("Unrecognized sound type", this.name);
+-			return;
+ 		}
+ 		this.audio.connect(soGain);
+ 		var top = soGain;
+diff -ruZ client/assets/js/racer/Main.js client_patched/assets/js/racer/Main.js
+--- client/assets/js/racer/Main.js	2021-06-21 22:36:27.331292781 +0200
++++ client_patched/assets/js/racer/Main.js	2021-06-21 22:35:50.346317491 +0200
+@@ -8,8 +8,8 @@
+ 	(function() {
+ 	    GATracker.trackPage('landing');
+ 	    Hydra.development(Config.DEVELOPMENT && !Device.mobile);
+-	    $plus1 = __body.find('#plusone');
+-        if ($plus1) $plus1.hide();
++	    //$plus1 = __body.find('#plusone');
++        //if ($plus1) $plus1.hide();
+         if (RacerDevice.mobile) __body.div.innerHTML = '';
+         setTimeout(RacerDevice.fullscreen, 200);
+ 	    if (RacerDevice.mobile) {
+@@ -52,6 +52,12 @@
+ 	    if (!_loader) setTimeout(function(){
+ 	        _loader = new Loader();
+             _loader.events.add(HydraEvents.COMPLETE, loaderComplete);  
++            // TODO(avm99963): While testing a long time ago I deleted the
++            // following function call for some reason, but I don't remember
++            // why.
++            //
++            // I've readded it and it doesn't seem to break anything. But if
++            // anything breaks, this might be the reason why ;)
+             loaderComplete()
+         }, 100);
+ 	}
+@@ -67,13 +73,5 @@
+     	    _loader = _loader.destroy();
+     	    _container = Container.instance();
+ 	    }, 100);
+-	    
+-	    if (!RacerDevice.mobile) setTimeout(initPlusOne, 1000);
+-	}
+-	
+-	function initPlusOne() {
+-	    gapi.plusone.render("plusone", {"size": "small"});
+-	    $plus1.show().visible().css({ opacity: 0, bottom: 20, right: 20 }).tween({ opacity: 1 }, 300, 'easeOutSine');
+ 	}
+ });
+-	
+\ No newline at end of file
+diff -ruZ client/assets/js/racer/config/Config.js client_patched/assets/js/racer/config/Config.js
+--- client/assets/js/racer/config/Config.js	2021-06-21 22:36:17.112668485 +0200
++++ client_patched/assets/js/racer/config/Config.js	2021-05-03 18:36:19.308161104 +0200
+@@ -5,7 +5,7 @@
+   this.FORCE_MOBILE = false;
+   this.FORCE_CODE = null;
+   this.DISABLE_SOUNDS = false;
+-  this.USE_WEBSOCKETS = false;
++  this.USE_WEBSOCKETS = true;
+   this.SKIP_INTRO = false;
+ 
+   if (window.location.hash.strpos("forcemobile")) {
+@@ -112,29 +112,10 @@
+     "assets/images/lineup/you-triangle.png",
+   ];
+ 
+-  this.APP_ENGINE = "https://gweb-chromeracer-qa.appspot.com";
++  this.APP_ENGINE = "https://{SERVER_IP}:{SERVER_PORT}";
++  this.PATH = "https://storage.googleapis.com/chrome-racer-static/";
+ 
+-  this.PATH = (function () {
+-    if (
+-      window.location.href.strpos("appspot") ||
+-      window.location.href.strpos("chrome.com")
+-    ) {
+-      _this.LIVE_SERVER = true;
+-      return "https://storage.googleapis.com/chrome-racer-static/";
+-    }
+-    return "";
+-  })();
+-
+-  this.SOCKET_SERVER = (function () {
+-    if (window.RACER_SOCKET_SERVER) {
+-      _this.USE_WEBSOCKETS = false;
+-      return window.RACER_SOCKET_SERVER;
+-    }
+-
+-    if (window.location.href.strpos("activetheorylab"))
+-      return "http://cloud.activetheorylab.net:8080";
+-    return "http://cloud.activetheorylab.net:8089";
+-  })();
++  this.SOCKET_SERVER = 'https://{SERVER_IP}:{SERVER_PORT}/';
+ 
+   this.PRESENTATION = (function () {
+     if (window.location.href.strpos("_prezinstall")) {
+diff -ruZ client/assets/js/racer/controllers/loader/Loader.js client_patched/assets/js/racer/controllers/loader/Loader.js
+--- client/assets/js/racer/controllers/loader/Loader.js	2021-06-21 22:36:19.342022463 +0200
++++ client_patched/assets/js/racer/controllers/loader/Loader.js	2021-05-03 19:03:34.800301160 +0200
+@@ -112,6 +112,7 @@
+     function complete() {
+         if (!_this.complete && _view) setTimeout(function(){
+             if (!_this.complete && _view) _view.animateOut(function(){
++                if (Global.SITE_LOADED == true) return;
+                 Global.SITE_LOADED = true;
+                 if (!_this.complete) _this.events.fire(HydraEvents.COMPLETE);
+             });
+diff -ruZ client/assets/js/racer/util/RacerDevice.js client_patched/assets/js/racer/util/RacerDevice.js
+--- client/assets/js/racer/util/RacerDevice.js	2021-06-21 22:36:17.255460664 +0200
++++ client_patched/assets/js/racer/util/RacerDevice.js	2021-05-02 01:31:23.323132939 +0200
+@@ -140,7 +140,6 @@
+         _this.removeURL = false;
+         resizeHandler();
+         _this.doc.scrollTop = 0;
+-        window.removeEventListener('touchmove');
+     }
+     
+     //*** Public Methods
+@@ -153,9 +152,6 @@
+         window.addEventListener('touchmove', function(e) {
+             var touch = Utils.touchEvent(e);
+             if (touch.y < 75) return false;
+-            if (!_this.chrome_iphone || (_this.chrome_iphone && touch.y > 120)) {
+-                e.preventDefault();
+-            }
+         });
+                 
+         /*window.addEventListener('touchstart', function() {
+diff -ruZ client/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js client_patched/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js
+--- client/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js	2021-06-21 22:36:22.893022514 +0200
++++ client_patched/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js	2021-05-02 01:31:23.323835315 +0200
+@@ -215,8 +215,6 @@
+     }
+     
+     this.destroy = function() {
+-        $input.div.removeEventListener('keyup');
+-        $form.div.removeEventListener('submit');
+         return this._destroy();
+     }
+ });
+diff -ruZ client/assets/js/racer/views/menu/mobile/MenuMobileView.js client_patched/assets/js/racer/views/menu/mobile/MenuMobileView.js
+--- client/assets/js/racer/views/menu/mobile/MenuMobileView.js	2021-06-21 22:36:21.970973941 +0200
++++ client_patched/assets/js/racer/views/menu/mobile/MenuMobileView.js	2021-05-02 02:12:26.512593626 +0200
+@@ -51,11 +51,11 @@
+     $text.invisible();
+     $this.addChild($text);
+ 
+-    // _start = _this.initClass(HorizontalButtonView, { text: 'START A NEW RACE', color: '#eee', shadow: true, start: true });
+-    // _start.css({ top: '50%', marginTop: -35 });
++    _start = _this.initClass(HorizontalButtonView, { text: 'START A NEW RACE', color: '#eee', shadow: true, start: true });
++    _start.css({ top: '50%', marginTop: -35 });
+ 
+-    //_join = _this.initClass(HorizontalButtonView, { text: 'JOIN A RACE', color: '#eee', shadow: true });
+-    //_join.css({ top: '50%', marginTop: 45 });
++    _join = _this.initClass(HorizontalButtonView, { text: 'JOIN A RACE', color: '#eee', shadow: true });
++    _join.css({ top: '50%', marginTop: 45 });
+   }
+ 
+   function initError() {
+diff -ruZ client/assets/js/sound/RacerSound.js client_patched/assets/js/sound/RacerSound.js
+--- client/assets/js/sound/RacerSound.js	2021-06-21 22:36:17.666806015 +0200
++++ client_patched/assets/js/sound/RacerSound.js	2021-05-02 01:31:23.325394153 +0200
+@@ -204,7 +204,6 @@
+ 	}
+ 	
+ 	function initSoundTouch(e) {
+-	    e.preventDefault();
+ 	    if (SCSound.isInited) {
+ 	    	__window.unbind('touchstart', initSoundTouch);
+ 	    	SCSound.onLibLoaded = onLibLoaded;
+diff -ruZ client/index.html client_patched/index.html
+--- client/index.html	2021-06-21 22:36:16.045542592 +0200
++++ client_patched/index.html	2021-05-03 18:17:14.112923133 +0200
+@@ -11,19 +11,19 @@
+         <meta content="Race across multiple screens. No apps. No downloads. Just start a race—sync up to five devices and tap your screens to rev your engines." itemprop="description">
+         <meta content="http://chrome.com/racer/assets/images/common/logos/share.png" itemprop="image">
+         <meta content="RACER: A Chrome Experiment" property="og:title"/>
+-        <meta content="http://g.co/racer" property="og:url"/>
+         <meta content="http://chrome.com/racer/assets/images/common/logos/share.png" property="og:image"/>
+         <meta content="Race across multiple screens. No apps. No downloads. Just start a race—sync up to five devices and tap your screens to rev your engines." property="og:description"/>
+ 
+         <title>RACER: A Chrome Experiment</title>
+-        <base href="/racer/">
+         <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+         <link href="http://g.co/racer" rel="canonical"/>
+-        <script src="https://apis.google.com/js/plusone.js" type="text/javascript">
+-            {"parsetags": "explicit"}
+-        </script>
++
++        <script type="text/javascript" src="assets/js/lib/pathseg.js"></script>
++        <script type="text/javascript" src="assets/js/lib/webkitAudioContextMonkeyPatch.js"></script>
+ 
+         <!--<script type="text/javascript" src="http://racer.activetheorylab.net/cms/data/"></script>-->
++        <!--<script src="https://storage.googleapis.com/chrome-racer-static/assets/data/mobile.js"></script>
++        <script src="https://storage.googleapis.com/chrome-racer-static/assets/js/lib/paper.js"></script>-->
+         <script src="assets/js/hydra/hydra.js" type="text/javascript"></script>
+ 
+         <script src="assets/js/racer/events/RacerEvents.js" type="text/javascript"></script>
+@@ -119,22 +119,5 @@
+     </head>
+     <body>
+         <div id="plusone"></div>
+-        <script type="text/javascript">
+-            var _gaq = _gaq || [];
+-            _gaq.push(["_setAccount", "UA-35050666-3"]);
+-            _gaq.push(["_trackPageview"]);
+-            (function () {
+-                var ga = document.createElement("script");
+-                ga.type = "text/javascript";
+-                ga.async = true;
+-                ga.src = (
+-                    "https:" == document.location.protocol
+-                        ? "https://ssl"
+-                        : "http://www"
+-                ) + ".google-analytics.com/ga.js";
+-                var s = document.getElementsByTagName("script")[0];
+-                s.parentNode.insertBefore(ga, s);
+-            })();
+-        </script>
+     </body>
+ </html>	
+\ No newline at end of file

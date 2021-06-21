@@ -1,0 +1,196 @@
+diff -ruN client/assets/js/lib/scsound.js client/assets/js/lib/scsound.js
+--- client/assets/js/lib/scsound.js	2021-05-02 00:26:11.000000000 +0200
++++ client/assets/js/lib/scsound.js	2021-05-02 00:23:53.000000000 +0200
+@@ -6,12 +6,12 @@
+ 	isReady: false,
+ 	isInited: false,
+ 	webaudio: false,
+-	debug: false,
+-	doLog: false,
++	debug: true,
++	doLog: true,
+ 	disable: false,
+ 	self:this,
+ 	dummyConsole:{  
+-	    log : function(){},  
++	    log : console.log,  
+ 	},
+ 	log:this.dummyConsole,
+ 	/**
+@@ -90,6 +90,7 @@
+ 	initWebAudio: function() {
+ 		SCSound.Core.EventBus = new SCSound.Core.EventBusClass();
+ 		SCSound.htmlAudio = true;
++		SCSound.audioTag = new Audio();
+ 		SCSound.Core.EventBus.addEventListener("SCLoadProgress", function(event, percentLoaded) {
+ 			SCSound.receive("scsound_progress", percentLoaded, "sounds_0.swf");
+ 		}, self);
+@@ -100,19 +101,6 @@
+ 		SCSound.sc = new SCSound.Core.SoundController(SCSound.xmlPath, SCSound.soundPath, function() {
+ 			SCSound.receive("scsound_ready", 1, "");
+ 			/** Only for debugging*/
+-			if (SCSound.debug) {
+-				var oHead = document.getElementsByTagName("head")[0];
+-				var oScript = document.createElement('script');
+-				oScript.type = 'text/javascript';
+-				oScript.src = "scdebug.js";
+-				oScript.onload = function() {
+-					scdebug.init();
+-				};
+-				if (scdebug) {
+-					scdebug.init();
+-				}
+-				oHead.appendChild(oScript);
+-			}
+ 		});
+ 	},
+ 	/**
+@@ -1984,7 +1972,7 @@
+ 				SCSound.audioTag.play();
+ 				return;
+ 			}
+-		}else if (this.audioBuffer.gain){
++		} else {
+ 			this.audio = this.voice;
+ 			this.audio.buffer = this.audioBuffer;
+ 			this.audio.playbackRate.value = this.playbackRate;
+@@ -1996,9 +1984,6 @@
+ 					this.audio.loopEnd = loopEnd/1000;
+ 				}
+ 			}
+-		}else {
+-			SCSound.console.log("Unrecognized sound type", this.name);
+-			return;
+ 		}
+ 		this.audio.connect(soGain);
+ 		var top = soGain;
+@@ -2375,4 +2360,4 @@
+ 	}, (duration*1000) + 1000);
+ 
+ 	Render.startRender(_this._timer);
+-};
+\ No newline at end of file
++};
+diff -ruN client/assets/js/racer/config/Config.js client/assets/js/racer/config/Config.js
+--- client/assets/js/racer/config/Config.js	2021-05-02 00:26:11.000000000 +0200
++++ client/assets/js/racer/config/Config.js	2021-05-02 00:16:16.000000000 +0200
+@@ -112,18 +112,8 @@
+     "assets/images/lineup/you-triangle.png",
+   ];
+ 
+-  this.APP_ENGINE = "https://gweb-chromeracer-qa.appspot.com";
+-
+-  this.PATH = (function () {
+-    if (
+-      window.location.href.strpos("appspot") ||
+-      window.location.href.strpos("chrome.com")
+-    ) {
+-      _this.LIVE_SERVER = true;
+-      return "https://storage.googleapis.com/chrome-racer-static/";
+-    }
+-    return "";
+-  })();
++  this.APP_ENGINE = "https://<server ip>:<server port>";
++  this.PATH = "https://<server ip>:<server port>/racer/";
+ 
+   this.SOCKET_SERVER = (function () {
+     if (window.RACER_SOCKET_SERVER) {
+diff -ruN client/assets/js/racer/util/RacerDevice.js client/assets/js/racer/util/RacerDevice.js
+--- client/assets/js/racer/util/RacerDevice.js	2021-05-02 00:26:11.000000000 +0200
++++ client/assets/js/racer/util/RacerDevice.js	2021-05-02 00:18:00.000000000 +0200
+@@ -140,7 +140,6 @@
+         _this.removeURL = false;
+         resizeHandler();
+         _this.doc.scrollTop = 0;
+-        window.removeEventListener('touchmove');
+     }
+     
+     //*** Public Methods
+@@ -153,9 +152,6 @@
+         window.addEventListener('touchmove', function(e) {
+             var touch = Utils.touchEvent(e);
+             if (touch.y < 75) return false;
+-            if (!_this.chrome_iphone || (_this.chrome_iphone && touch.y > 120)) {
+-                e.preventDefault();
+-            }
+         });
+                 
+         /*window.addEventListener('touchstart', function() {
+diff -ruN client/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js client/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js
+--- client/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js	2021-05-02 00:26:14.000000000 +0200
++++ client/assets/js/racer/views/lobby/common/code/LobbyCodeViewInput.js	2021-05-02 00:27:04.000000000 +0200
+@@ -215,8 +215,6 @@
+     }
+     
+     this.destroy = function() {
+-        $input.div.removeEventListener('keyup');
+-        $form.div.removeEventListener('submit');
+         return this._destroy();
+     }
+ });
+diff -ruN client/assets/js/sound/RacerSound.js client/assets/js/sound/RacerSound.js
+--- client/assets/js/sound/RacerSound.js	2021-05-02 00:26:11.000000000 +0200
++++ client/assets/js/sound/RacerSound.js	2021-05-02 00:19:08.000000000 +0200
+@@ -204,7 +204,6 @@
+ 	}
+ 	
+ 	function initSoundTouch(e) {
+-	    e.preventDefault();
+ 	    if (SCSound.isInited) {
+ 	    	__window.unbind('touchstart', initSoundTouch);
+ 	    	SCSound.onLibLoaded = onLibLoaded;
+@@ -781,4 +780,4 @@
+ 		}
+ 	}
+ 
+-}, 'Static');
+\ No newline at end of file
++}, 'Static');
+diff -ruN client/index.html client/index.html
+--- client/index.html	2021-05-02 00:26:10.000000000 +0200
++++ client/index.html	2021-05-02 00:33:14.000000000 +0200
+@@ -11,17 +11,14 @@
+         <meta content="Race across multiple screens. No apps. No downloads. Just start a race—sync up to five devices and tap your screens to rev your engines." itemprop="description">
+         <meta content="http://chrome.com/racer/assets/images/common/logos/share.png" itemprop="image">
+         <meta content="RACER: A Chrome Experiment" property="og:title"/>
+-        <meta content="http://g.co/racer" property="og:url"/>
+         <meta content="http://chrome.com/racer/assets/images/common/logos/share.png" property="og:image"/>
+         <meta content="Race across multiple screens. No apps. No downloads. Just start a race—sync up to five devices and tap your screens to rev your engines." property="og:description"/>
+ 
+         <title>RACER: A Chrome Experiment</title>
+-        <base href="/racer/">
+         <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+         <link href="http://g.co/racer" rel="canonical"/>
+-        <script src="https://apis.google.com/js/plusone.js" type="text/javascript">
+-            {"parsetags": "explicit"}
+-        </script>
++
++        <script type="text/javascript" src="assets/js/lib/pathseg.js"></script>
+ 
+         <!--<script type="text/javascript" src="http://racer.activetheorylab.net/cms/data/"></script>-->
+         <script src="assets/js/hydra/hydra.js" type="text/javascript"></script>
+@@ -119,22 +116,5 @@
+     </head>
+     <body>
+         <div id="plusone"></div>
+-        <script type="text/javascript">
+-            var _gaq = _gaq || [];
+-            _gaq.push(["_setAccount", "UA-35050666-3"]);
+-            _gaq.push(["_trackPageview"]);
+-            (function () {
+-                var ga = document.createElement("script");
+-                ga.type = "text/javascript";
+-                ga.async = true;
+-                ga.src = (
+-                    "https:" == document.location.protocol
+-                        ? "https://ssl"
+-                        : "http://www"
+-                ) + ".google-analytics.com/ga.js";
+-                var s = document.getElementsByTagName("script")[0];
+-                s.parentNode.insertBefore(ga, s);
+-            })();
+-        </script>
+     </body>
+-</html>	
+\ No newline at end of file
++</html>	
