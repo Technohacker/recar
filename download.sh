@@ -1,10 +1,13 @@
 #!/bin/sh
-mkdir -p client_tmp
+mkdir -p client
 
 # Download website
-(cd client_tmp && wget -r --no-parent --compression=auto --no-cookies https://chrome.com/racer/index.html)
-mv client_tmp/chrome.com/racer client
-rm -rf client_tmp
+(
+    cd client &&
+    # nH removes the hostname, cut-dirs removes the racer subdirectory
+    wget -r --no-parent --compression=auto --no-cookies -nH --cut-dirs=1 https://chrome.com/racer/index.html &&
+    wget -r --no-parent --compression=auto --no-cookies -nH --cut-dirs=1 --base=https://chrome.com/racer/ --input-file=../extra_resources.txt
+)
 
 # Copy any polyfills
 cp polyfills/* client/assets/js/lib/
