@@ -26,6 +26,7 @@ module.exports = {
             agent,
             scrn,
             color: this.races[code].players.length,
+            webaudio: true,
             name: "NEW"
         });
         this.sockets[code].push(socket);
